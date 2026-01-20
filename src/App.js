@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Heart, Activity, Smile, Users, BookOpen, DollarSign, Briefcase, Sun, Moon, 
-  Save, BarChart2, CheckCircle, FileText, 
+  Save, BarChart2, FileText, 
   Clock, Award, AlertCircle, RefreshCw, ChevronRight, Home
 } from 'lucide-react';
 import { 
