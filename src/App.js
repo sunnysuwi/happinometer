@@ -1,14 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Heart, Activity, Smile, Users, BookOpen, DollarSign, Briefcase, Sun, Moon, 
   Save, BarChart2, CheckCircle, FileText, 
-  Clock, TrendingUp, Award, Scale, MessageCircle, Anchor, Zap, 
-  ClipboardList, Trophy, ArrowDown, ArrowUp, MapPin, Building, AlertCircle, 
-  Stethoscope, UserCheck, RefreshCw, ChevronRight, ChevronLeft, Home
+  Clock, Award, AlertCircle, RefreshCw, ChevronRight, Home
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell 
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar 
 } from 'recharts';
 
 // --- Configuration ---
