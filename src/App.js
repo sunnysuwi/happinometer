@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Heart, Activity, Smile, Users, BookOpen, DollarSign, Briefcase, Sun, Moon, 
   Save, BarChart2, CheckCircle, FileText, 
   Clock, Award, AlertCircle, RefreshCw, ChevronRight, Home
 } from 'lucide-react';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar 
 } from 'recharts';
 
@@ -233,8 +233,19 @@ const SECTIONS = [
   }
 ];
 
-// ... (Helpers) ...
-// --- Helper to extract number from string (e.g. "1. ..." -> 1) ---
+// --- Helpers ---
+
+// Calculate generation based on age
+const calculateGen = (age) => {
+    const a = parseInt(age);
+    if(!a) return "Unknown";
+    if(a >= 60) return "Baby Boomer";
+    if(a >= 43) return "Gen X";
+    if(a >= 26) return "Gen Y";
+    return "Gen Z";
+};
+
+// Helper to extract number from string (e.g. "1. ..." -> 1)
 const extractVal = (v) => {
   if (typeof v === 'number') return v;
   if (typeof v === 'string') {
@@ -244,7 +255,7 @@ const extractVal = (v) => {
   return null;
 };
 
-// --- Updated Calculate Question Score based on 1=0, 2=25... ---
+// Updated Calculate Question Score based on 1=0, 2=25...
 const calculateQuestionScore = (q, val) => {
     if (val === undefined || val === null) return 0;
     
@@ -667,7 +678,7 @@ const DashboardView = ({ loadingData, dashboardStats, rawSheetData, selectedYear
                 </div>
                 <div className="text-center sm:text-right">
                     <p className="text-sm opacity-80">คะแนนเฉลี่ยรวม</p>
-                    <p className="text-4xl sm:text-5xl font-bold">{stats.happiness.reduce((a,b)=>a+b.score,0)/9 .toFixed(2)}</p>
+                    <p className="text-4xl sm:text-5xl font-bold">{(stats.happiness.reduce((a,b)=>a+b.score,0)/9).toFixed(2)}</p>
                 </div>
             </div>
 
@@ -748,34 +759,11 @@ export default function App() {
   const [loadingData, setLoadingData] = useState(false);
   const [dashboardStats, setDashboardStats] = useState(null);
 
-  // Fetch Data logic
-  const fetchSheetData = async () => {
-    if (!GOOGLE_SCRIPT_URL) return;
-    setLoadingData(true);
-    try {
-        const response = await fetch(GOOGLE_SCRIPT_URL);
-        const data = await response.json();
-        setRawSheetData(data);
-        processSheetData(data);
-    } catch (e) {
-        console.error("Failed to fetch data", e);
-        // Fallback for demo purposes if fetch fails (CORS etc)
-        // setDashboardStats(MOCK_DASHBOARD_DATA); 
-    } finally {
-        setLoadingData(false);
-    }
-  };
+  // Define helper functions outside components if they don't depend on state/props, 
+  // or wrap in useCallback inside component.
+  // calculateGen is pure, defined above.
 
-  const calculateGen = (age) => {
-      const a = parseInt(age);
-      if(!a) return "Unknown";
-      if(a >= 60) return "Baby Boomer";
-      if(a >= 43) return "Gen X";
-      if(a >= 26) return "Gen Y";
-      return "Gen Z";
-  };
-
-  const processSheetData = (data) => {
+  const processSheetData = useCallback((data) => {
     if (!data || data.length === 0) return;
     const avg = (items, key) => {
         const valid = items.filter(i => i[key] !== undefined && i[key] !== "");
@@ -827,13 +815,31 @@ export default function App() {
         byGeneration: groupByAvg(processedData, "Generation", "Overall Happiness Avg"),
     };
     setDashboardStats(stats);
-  };
+  }, []); // No dependencies for processSheetData as it uses pure functions/variables
+
+  // Fetch Data logic
+  const fetchSheetData = useCallback(async () => {
+    if (!GOOGLE_SCRIPT_URL) return;
+    setLoadingData(true);
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL);
+        const data = await response.json();
+        setRawSheetData(data);
+        processSheetData(data);
+    } catch (e) {
+        console.error("Failed to fetch data", e);
+        // Fallback for demo purposes if fetch fails (CORS etc)
+        // setDashboardStats(MOCK_DASHBOARD_DATA); 
+    } finally {
+        setLoadingData(false);
+    }
+  }, [processSheetData]);
 
   useEffect(() => {
       if (view === 'dashboard') {
           fetchSheetData();
       }
-  }, [view]);
+  }, [view, fetchSheetData]);
   
   const handleSubmit = async () => {
     setIsSubmitting(true);
